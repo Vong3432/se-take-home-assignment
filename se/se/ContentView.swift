@@ -40,13 +40,13 @@ struct ContentView: View {
                 
                 Section("PENDING") {
                     ForEach(pendingOrders) { order in
-                        OrderItemRow(order: order)
+                        OrderItemRow(id: order.id, isVIP: order.isVIP, status: order.status)
                     }
                 }
                 
                 Section("COMPLETE") {
                     ForEach(completeOrders) { order in
-                        OrderItemRow(order: order)
+                        OrderItemRow(id: order.id, isVIP: order.isVIP, status: order.status)
                     }
                 }
             }
@@ -55,6 +55,7 @@ struct ContentView: View {
                 Text("\(secs)")
                     .onReceive(timer) { _ in
                         secs = secs + 1
+                        
                         vm.processOrder()
                     }
             }

@@ -13,12 +13,19 @@ enum OrderStatus: String {
     case complete = "COMPLETE"
 }
 
-struct Order: Identifiable, Equatable {
-    var id = UUID().uuidString
-    var status: OrderStatus
+class Order: Identifiable, Equatable, ObservableObject {
+    var id: String
+    @Published var status: OrderStatus
     let isVIP: Bool
     
-    static func ==(lhs: Order, rhs: Order) -> Bool {
-        lhs.id == rhs.id
+    init(id: String? = nil, status: OrderStatus, isVIP: Bool) {
+        self.id = id ?? UUID().uuidString
+        self.status = status
+        self.isVIP = isVIP
     }
+    
+    static func ==(lhs: Order, rhs: Order) -> Bool {
+        lhs.id == rhs.id 
+    }
+    
 }

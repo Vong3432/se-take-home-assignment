@@ -8,20 +8,28 @@
 import SwiftUI
 
 struct OrderItemRow: View {
-    let order: Order
+    let id: String
+    let isVIP: Bool
+    let status: OrderStatus
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("ORDER: \(order.id)")
+            Text("ORDER: \(id)")
                 .font(.headline)
             
-            if order.isVIP {
-                Text("VIP")
-                    .font(.subheadline)
-                    .padding(.horizontal)
-                    .background(Color.orange)
-                    .foregroundColor(.white)
+            HStack {
+                if isVIP {
+                    Text("VIP")
+                        .font(.subheadline)
+                        .padding(.horizontal)
+                        .background(Color.orange)
+                        .foregroundColor(.white)
                     
+                }
+                
+                if status == .processing {
+                    ProgressView()
+                }
             }
         }
     }
@@ -29,6 +37,6 @@ struct OrderItemRow: View {
 
 struct OrderItemRow_Previews: PreviewProvider {
     static var previews: some View {
-        OrderItemRow(order: Order(status: .pending, isVIP: false))
+        OrderItemRow(id: "123", isVIP: true, status: .complete)
     }
 }
