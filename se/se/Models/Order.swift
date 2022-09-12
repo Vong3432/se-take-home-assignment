@@ -13,9 +13,9 @@ enum OrderStatus: String {
     case complete = "COMPLETE"
 }
 
-class Order: Identifiable, Equatable, ObservableObject {
+class Order: Identifiable, Equatable {
     var id: String
-    @Published var status: OrderStatus
+    var status: OrderStatus
     let isVIP: Bool
     
     init(id: String? = nil, status: OrderStatus, isVIP: Bool) {

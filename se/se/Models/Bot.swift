@@ -20,32 +20,45 @@ class Bot: Identifiable {
     }
     
     func assignOrder(order: Order) {
+        self.order?.status = .pending
         self.order = order
     }
     
-    func process() async {
+    func process() {
         guard self.order != nil else { return }
         
         queue.async { [self] in
-            order?.status = .processing
+            
+            Task {
+                await MainActor.run {
+                    order?.status = .processing
+                }
+            }
             
             task = Task {
                 try? await Task.sleep(nanoseconds: 10_000_000_000)
                 
                 if Task.isCancelled { return }
                 
-                order?.status = .complete
-                task = nil
-                order = nil
+                await MainActor.run {
+                    order?.status = .complete
+                    order = nil
+                }
             }
         }
     }
     
     func cancel() {
-        order?.status = .pending
-        
-        queue.async {
-            self.task?.cancel()
+        queue.async { [self] in
+            
+            Task {
+                await MainActor.run {
+                    order?.status = .pending
+                }
+            }
+            
+            task?.cancel()
+            task = nil
         }
     }
 }

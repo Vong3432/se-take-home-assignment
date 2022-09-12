@@ -10,8 +10,6 @@ class Orders: ObservableObject {
     @Published var orders = [Order]()
     @Published var bots = [Bot]()
     
-    private var queue = DispatchQueue(label: "orders.queue")
-    
     func createOrder(_ order: Order) {
         
         // Check if this order is for VIP
@@ -60,33 +58,28 @@ class Orders: ObservableObject {
     ///  - Maybe a better way to handle this kind of situation is to implement a real-time communication technology (e.g: Websocket, Pusher), where the server will handle the order status logic, and the app will be listening to the events from the server and update the `orders` list accordingly.
     ///  - Without real-time communication technology and handle the order status in app only, it might cause data inconsistensy issue. For instance, userA may see different results on different devices.
     func processOrder() {
-        queue.async { [self] in
-            let pendingOrders = orders.filter { $0.status == .pending }
+        let pendingOrders = orders.filter { $0.status == .pending }
+        
+        guard bots.isEmpty == false, pendingOrders.isEmpty == false, let order = pendingOrders.first else { return }
+        
+        // get free bot
+        let bot = bots.first { bot in
+            let isEmptyOrder = bot.order == nil
+            let isNonVipOrder = bot.order?.isVIP == false
             
-            guard bots.isEmpty == false, pendingOrders.isEmpty == false, let order = pendingOrders.first else { return }
-            
-            // get free bot
-            let bot = bots.first { bot in
-                let isEmptyOrder = bot.order == nil
-                let isNonVipOrder = bot.order?.isVIP == false
-                
-                return isEmptyOrder || (isNonVipOrder && order.isVIP)
-            }
-            
-            guard let bot = bot else { return }
-            
-            // reset if bot is handling non-VIP orders before
-            if bot.order?.isVIP == false && order.isVIP {
-                bot.order?.status = .pending
-            }
-            
-            // assign order to the bot
-            bot.assignOrder(order: order)
-            
-            Task {
-                await bot.process()
-            }
+            return isEmptyOrder || (isNonVipOrder && order.isVIP)
         }
+        
+        guard let bot = bot else { return }
+        
+        // reset if bot is handling non-VIP orders before
+        if bot.order?.isVIP == false && order.isVIP {
+            bot.cancel()
+        }
+        
+        // assign order to the bot
+        bot.assignOrder(order: order)
+        bot.process()
     }
 }
 
