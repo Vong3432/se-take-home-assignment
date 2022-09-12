@@ -7,8 +7,6 @@
 
 import Foundation
 
-typealias CancelCompletion = (Bool) -> Void
-
 class Bot: Identifiable {
     let id: String?
     private(set)var order: Order?
@@ -23,7 +21,6 @@ class Bot: Identifiable {
     
     func assignOrder(order: Order) {
         self.order = order
-        print("Assign ID: \(order.id)")
     }
     
     func process() async {
@@ -33,11 +30,9 @@ class Bot: Identifiable {
             order?.status = .processing
             
             task = Task {
-                try? await Task.sleep(nanoseconds: 5_000_000_000)
+                try? await Task.sleep(nanoseconds: 10_000_000_000)
                 
                 if Task.isCancelled { return }
-                
-                print("PROCEED \(self.order?.id)")
                 
                 order?.status = .complete
                 task = nil
@@ -46,8 +41,7 @@ class Bot: Identifiable {
         }
     }
     
-    func cancel() {    
-        print("Cancel ID: \(order?.id)")
+    func cancel() {
         order?.status = .pending
         
         queue.async {
