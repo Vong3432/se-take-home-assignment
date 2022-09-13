@@ -27,14 +27,13 @@ class Bot: Identifiable {
     func process() {
         guard self.order != nil else { return }
         
-        queue.async { [self] in
-            
-            Task {
-                await MainActor.run {
-                    order?.status = .processing
-                }
+        Task {
+            await MainActor.run {
+                order?.status = .processing
             }
-            
+        }
+        
+        queue.async { [self] in
             task = Task {
                 try? await Task.sleep(nanoseconds: 10_000_000_000)
                 
@@ -49,14 +48,13 @@ class Bot: Identifiable {
     }
     
     func cancel() {
-        queue.async { [self] in
-            
-            Task {
-                await MainActor.run {
-                    order?.status = .pending
-                }
+        Task {
+            await MainActor.run {
+                order?.status = .pending
             }
-            
+        }
+
+        queue.async { [self] in            
             task?.cancel()
             task = nil
         }
